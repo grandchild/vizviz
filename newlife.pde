@@ -13,24 +13,28 @@ float[] phasew;
 
 
 // zoom factor
-float zoom = 1
+float zoom = 4;
 // vector field scale
-float iscale = 2;
+float iscale = 5;
 // outer scale
-float oscale = 3;
+float oscale = 8;
 // chain point amount of previous frame 
-float tdelay = 0.1;
+float tdelay = 0;
 // how much each chain-element is moved to the middle
 float shrink = 0.9;
 // strength of vector field
-float vstrength = 5;
+float vstrength = 0;
 // scale for the offset initialization
 float offset_scale = 0.3;
 // speed of change
 float w_offset = 0;
+// velocity
+float phase_scale = 0.01;
+// fix ball radius (the initial point thing)
+float frad = 2000;
 
 // length of each chain element
-int elem_len = 10;
+int elem_len = 50;
 // number of chains
 int chains = 1;
 // pint buffer
@@ -52,16 +56,16 @@ void setup() {
   phasew = new float[9];
 
   megabuf = new Point[chains][elem_len];
-  for (int i = 0; i < chains; i++) { 
+  for (int i = 0; i < chains; i++) {
     for (int j = 0; j < elem_len; j++) {
       megabuf[i][j] = new Point();
-      megabuf[i][j].x = 0;//xcenter + random(1-offset_scale, 1+offset_scale);
-      megabuf[i][j].y = 0;//ycenter + random(1-offset_scale, 1+offset_scale);
-      megabuf[i][j].z = 0;//zcenter + random(1-offset_scale, 1+offset_scale);
     }
+    megabuf[i][0].x = frad*cos(TWO_PI*i*3*elem_len)*sin(i*TWO_PI/elem_len);
+    megabuf[i][0].y = frad*sin(TWO_PI*i*3*elem_len)*sin(i*TWO_PI/elem_len);
+    megabuf[i][0].z = frad*cos(i*TWO_PI/elem_len);
   }
   for (int i = 0; i < 9; i++) {
-      phasew[i] = random(-1, 1);
+    phasew[i] = random(-1, 1);
   }
 
   minim = new Minim(this);
@@ -80,7 +84,7 @@ void setup() {
 void draw() {
   background(0);
   translate(width/2, height/2);
-  scale(zoom)
+  scale(zoom);
   beat.detect(in.mix);
   if (beat.isOnset()) {
     for (int i = 0; i < 9; i++) {
@@ -90,7 +94,7 @@ void draw() {
 
 
   for (int i = 0; i < 9; i++) {
-    phases[i] = (phases[i]+phasew[i])%TWO_PI;
+    phases[i] = (phases[i]+phasew[i]*phase_scale)%TWO_PI;
     //line(width*0.5, i*15, i*15+phases[i]*width*0.1, i*15);
     //stroke(127);
   }
