@@ -47,7 +47,7 @@ class Point {
     y = 0;
     z = 0;
   }
-}
+};
 
 
 void setup() {
@@ -89,6 +89,7 @@ void draw() {
   if (beat.isOnset()) {
     for (int i = 0; i < 9; i++) {
       phasew[i] = phasew[i]*0.5+random(-1, 1)*0.5*w_offset;
+      ellipse(20, 20, 20, 20);
     }
   }
 
