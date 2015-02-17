@@ -11,19 +11,28 @@ int pos = 0;
 float[] phases;
 float[] phasew;
 
+
+// zoom factor
+float zoom = 1
 // vector field scale
-float scale = 5;
+float iscale = 2;
+// outer scale
+float oscale = 3;
 // chain point amount of previous frame 
-float tdelay = 0;
+float tdelay = 0.1;
 // how much each chain-element is moved to the middle
-float shrink = 0.8;
+float shrink = 0.9;
 // strength of vector field
-float vstrength = 0.5;
+float vstrength = 5;
+// scale for the offset initialization
+float offset_scale = 0.3;
+// speed of change
+float w_offset = 0;
 
 // length of each chain element
 int elem_len = 10;
 // number of chains
-int chains = 10;
+int chains = 1;
 // pint buffer
 Point[][] megabuf;
 
@@ -39,10 +48,6 @@ class Point {
 
 void setup() {
 
-  float xcenter = width*0.5;
-  float ycenter = height*0.5;
-  float zcenter = ycenter;
-
   phases = new float[9];
   phasew = new float[9];
 
@@ -50,10 +55,13 @@ void setup() {
   for (int i = 0; i < chains; i++) { 
     for (int j = 0; j < elem_len; j++) {
       megabuf[i][j] = new Point();
-      megabuf[i][j].x = xcenter * random(0.7, 1.3);
-      megabuf[i][j].y = ycenter * random(0.7, 1.3);
-      megabuf[i][j].z = zcenter * random(0.7, 1.3);
+      megabuf[i][j].x = 0;//xcenter + random(1-offset_scale, 1+offset_scale);
+      megabuf[i][j].y = 0;//ycenter + random(1-offset_scale, 1+offset_scale);
+      megabuf[i][j].z = 0;//zcenter + random(1-offset_scale, 1+offset_scale);
     }
+  }
+  for (int i = 0; i < 9; i++) {
+      phasew[i] = random(-1, 1);
   }
 
   minim = new Minim(this);
@@ -63,7 +71,7 @@ void setup() {
   beat = new BeatDetect();
 
   size(int(displayWidth*0.5), int(displayHeight*0.5), OPENGL);
-  frameRate(60);
+  frameRate(24);
   noiseDetail(3);
 }
 
@@ -72,10 +80,11 @@ void setup() {
 void draw() {
   background(0);
   translate(width/2, height/2);
+  scale(zoom)
   beat.detect(in.mix);
   if (beat.isOnset()) {
     for (int i = 0; i < 9; i++) {
-      phasew[i] = phasew[i]*0.5+random(-1, 1)*0.5;
+      phasew[i] = phasew[i]*0.5+random(-1, 1)*0.5*w_offset;
     }
   }
 
@@ -94,9 +103,9 @@ void draw() {
       float x1 =megabuf[i][j-1].x;
       float y1 =megabuf[i][j-1].y;
       float z1 =megabuf[i][j-1].z;
-      megabuf[i][j].x = megabuf[i][j].x*tdelay + x1*shrink + sin( sin(z1*scale + phases[0]) * sin(y1*scale + phases[1]) + phases[3])*vstrength;
-      megabuf[i][j].y = megabuf[i][j].y*tdelay + y1*shrink + sin( sin(x1*scale + phases[3]) * sin(z1*scale + phases[4]) + phases[5])*vstrength;
-      megabuf[i][j].z = megabuf[i][j].z*tdelay + z1*shrink + sin( sin(y1*scale + phases[6]) * sin(x1*scale + phases[7]) + phases[8])*vstrength;
+      megabuf[i][j].x = megabuf[i][j].x*tdelay + x1*shrink + sin( sin(z1*iscale + phases[0]) * sin(y1*iscale + phases[1])*oscale + phases[3])*vstrength;
+      megabuf[i][j].y = megabuf[i][j].y*tdelay + y1*shrink + sin( sin(x1*iscale + phases[3]) * sin(z1*iscale + phases[4])*oscale + phases[5])*vstrength;
+      megabuf[i][j].z = megabuf[i][j].z*tdelay + z1*shrink + sin( sin(y1*iscale + phases[6]) * sin(x1*iscale + phases[7])*oscale + phases[8])*vstrength;
       curveVertex(megabuf[i][j].x, megabuf[i][j].y, megabuf[i][j].z);
     }
     endShape();
