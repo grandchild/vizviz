@@ -13,30 +13,30 @@ float[] phasew;
 
 
 // zoom factor
-float zoom = 1;
+float zoom = 2;
 // vector field scale
 float iscale = 0.05;
 // outer scale
-float oscale = 1;
+float oscale = 4;
 // chain point amount of previous frame 
-float tdelay = 0.0;
+float tdelay = 0.6;
 // how much each chain-element is moved to the middle
-float shrink = 0.97;
+float shrink = 0.38;
 // strength of vector field
-float vstrength = 8;
+float vstrength = 1;
 // scale for the offset initialization
 float offset_scale = 0.3;
 // speed of change
 float w_offset = 1;
 // velocity
-float phase_scale = 0.01;
+float phase_scale = 0.1;
 // fix ball radius (the initial point thing)
-float frad = 300;
+float frad = 30;
 
 // length of each chain element
 int elem_len = 100;
 // number of chains
-int chains = 16;
+int chains = 8;
 // pint buffer
 Point[][] megabuf;
 
@@ -60,9 +60,9 @@ void setup() {
     for (int j = 0; j < elem_len; j++) {
       megabuf[i][j] = new Point();
     }
-    megabuf[i][0].x = frad*(0.5 + cos(TWO_PI*i*1/chains)*sin(i*TWO_PI/chains));
-    megabuf[i][0].y = frad*(0.5 + sin(TWO_PI*i*1/chains)*sin(i*TWO_PI/chains));
-    megabuf[i][0].z = frad*(0.5 + cos(i*TWO_PI/chains));
+    megabuf[i][0].x = frad*(-0. + cos(TWO_PI*i*1/chains)*sin(i*TWO_PI/chains));
+    megabuf[i][0].y = frad*(-0. + sin(TWO_PI*i*1/chains)*sin(i*TWO_PI/chains));
+    megabuf[i][0].z = frad*(-0. + cos(i*TWO_PI/chains));
   }
   for (int i = 0; i < 9; i++) {
     phasew[i] = random(-1, 1)*0.5*w_offset;
