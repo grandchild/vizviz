@@ -47,7 +47,7 @@ class Point {
     y = 0;
     z = 0;
   }
-}
+};
 
 
 void setup() {
