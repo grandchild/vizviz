@@ -79,20 +79,52 @@ void setup() {
   noiseDetail(3);
 }
 
+float rx = 0;
+float rx_w = 0;
+float ry = 0;
+float ry_w = 0;
+float rz = 0;
+float rz_w = 0;
+
 
 
 void draw() {
+  vstrength = mouseY*4/height;
   background(0);
-  translate(width/2, height/2);
+  translate(width/2, height/2, 0);
   scale(zoom);
+  rx = rx+rx_w;
+  ry = ry+ry_w;
+  rz = rz+rz_w;
+  rotateX(rx);
+  rotateY(ry);
+  rotateZ(rz);
+
   beat.detect(in.mix);
   if (beat.isOnset()) {
     for (int i = 0; i < 9; i++) {
+      // rotation selector
+      float rotaccl = vstrength*0.005;
+      int rotsel = round(random(1, 3));
+      if (rotsel == 1) {
+        rx_w = 1*rotaccl;
+      } else {
+        rx_w = 0;
+      }
+      if (rotsel == 2) {
+        ry_w = 1*rotaccl;
+      } else {
+        ry_w = 0;
+      }
+      if (rotsel == 3) {
+        rz_w = 1*rotaccl;
+      } else {
+        rz_w = 0;
+      }
       phasew[i] = phasew[i]*0.5+random(-1, 1)*0.5*w_offset;
       ellipse(20, 20, 20, 20);
     }
   }
-
 
   for (int i = 0; i < 9; i++) {
     phases[i] = (phases[i]+phasew[i]*phase_scale)%TWO_PI;
@@ -102,13 +134,17 @@ void draw() {
   float rad = -mouseX/8;
   for (int i = 0; i < chains; i++) {
     noFill();
-    stroke(255, 255, 255, 127);
+    stroke(255,255,255,255);
     beginShape();
     curveVertex(megabuf[i][0].x, megabuf[i][0].y, megabuf[i][0].z);
+
+    // initial sphere
     megabuf[i][0].x = rad*cos(TWO_PI*i*2/chains)*sin(i*TWO_PI/chains);
     megabuf[i][0].y = rad*sin(TWO_PI*i*2/chains)*sin(i*TWO_PI/chains);
     megabuf[i][0].z = rad*cos(i*TWO_PI/chains);
+
     for (int j = 1; j < elem_len; j++) {
+      //stroke(255,255,255, 255-(j*255/elem_len));
       float x1 =megabuf[i][j-1].x;
       float y1 =megabuf[i][j-1].y;
       float z1 =megabuf[i][j-1].z;
