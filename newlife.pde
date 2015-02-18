@@ -13,9 +13,9 @@ float[] phasew;
 
 
 // zoom factor
-float zoom = 3;
+float zoom = 1;
 // vector field scale
-float iscale = 0.03;
+float iscale = 0.01;
 // outer scale
 float oscale = 4;
 // chain point amount of previous frame 
@@ -23,7 +23,7 @@ float tdelay = 0.8;
 // how much each chain-element is moved to the middle
 float shrink = 0.16;
 // strength of vector field
-float vstrength = 2;
+float vstrength_init = 30;
 // scale for the offset initialization
 float offset_scale = 0.3;
 // speed of change
@@ -31,13 +31,13 @@ float w_offset = 1;
 // velocity
 float phase_scale = 0.06;
 // fix ball radius (the initial point thing)
-float frad = 90;
+float frad = 0;
 
 // length of each chain element
 int elem_len = 50;
 // number of chains
-int chains = 20;
-// pint buffer
+int chains = 15;
+// point buffer
 Point[][] megabuf;
 
 class Point {
@@ -48,7 +48,6 @@ class Point {
     z = 0;
   }
 };
-
 
 void setup() {
 
@@ -74,7 +73,7 @@ void setup() {
 
   beat = new BeatDetect();
 
-  size(int(displayWidth*0.5), int(displayHeight*0.5), OPENGL);
+  size(int(displayHeight*0.5), int(displayHeight*0.5), OPENGL);
   frameRate(60);
   noiseDetail(3);
 }
@@ -85,12 +84,22 @@ float ry = 0;
 float ry_w = 0;
 float rz = 0;
 float rz_w = 0;
+float vstrength;
+float rad;
 
-
+void showDebug() {
+  textSize(20);
+  fill(127);
+  text("rad: "+rad, 10, 25);
+  text("vstrength: "+ vstrength, 10, 50);
+  text("vstrength: "+ vstrength, 10, 50);
+  noFill();
+}
 
 void draw() {
-  vstrength = mouseY*4/height;
-  background(0);
+  vstrength = float(mouseY)/float(height)*vstrength_init;
+  background(255);
+  showDebug();
   translate(width/2, height/2, 0);
   scale(zoom);
   rx = rx+rx_w;
@@ -101,7 +110,7 @@ void draw() {
   rotateZ(rz);
 
   beat.detect(in.mix);
-  if (beat.isOnset()) {
+  if (beat.isOnset() || (keyPressed && key == 0x20)) {
     for (int i = 0; i < 9; i++) {
       // rotation selector
       float rotaccl = vstrength*0.005;
@@ -131,10 +140,10 @@ void draw() {
     //line(width*0.5, i*15, i*15+phases[i]*width*0.1, i*15);
     //stroke(127);
   }
-  float rad = -mouseX/8;
+  rad = float(mouseX)/float(width)*height;
   for (int i = 0; i < chains; i++) {
     noFill();
-    stroke(255,255,255,255);
+    stroke(0);
     beginShape();
     curveVertex(megabuf[i][0].x, megabuf[i][0].y, megabuf[i][0].z);
 
@@ -145,15 +154,21 @@ void draw() {
 
     for (int j = 1; j < elem_len; j++) {
       //stroke(255,255,255, 255-(j*255/elem_len));
-      float x1 =megabuf[i][j-1].x;
-      float y1 =megabuf[i][j-1].y;
-      float z1 =megabuf[i][j-1].z;
-      megabuf[i][j].x = megabuf[i][j].x*tdelay + x1*shrink + sin( sin(z1*iscale + phases[0]) * sin(y1*iscale + phases[1])*oscale + phases[3])*vstrength;
-      megabuf[i][j].y = megabuf[i][j].y*tdelay + y1*shrink + sin( sin(x1*iscale + phases[3]) * sin(z1*iscale + phases[4])*oscale + phases[5])*vstrength;
-      megabuf[i][j].z = megabuf[i][j].z*tdelay + z1*shrink + sin( sin(y1*iscale + phases[6]) * sin(x1*iscale + phases[7])*oscale + phases[8])*vstrength;
+      if (!(keyPressed && key == 'p')) {
+        updateBuffer(i, j);
+      }
       curveVertex(megabuf[i][j].x, megabuf[i][j].y, megabuf[i][j].z);
     }
     endShape();
   }
+}
+
+void updateBuffer(int i, int j) {
+  float x1 =megabuf[i][j-1].x;
+  float y1 =megabuf[i][j-1].y;
+  float z1 =megabuf[i][j-1].z;
+  megabuf[i][j].x = megabuf[i][j].x*tdelay + x1*shrink + sin( sin(z1*iscale + phases[0]) * sin(y1*iscale + phases[1])*oscale + phases[3])*vstrength;
+  megabuf[i][j].y = megabuf[i][j].y*tdelay + y1*shrink + sin( sin(x1*iscale + phases[3]) * sin(z1*iscale + phases[4])*oscale + phases[5])*vstrength;
+  megabuf[i][j].z = megabuf[i][j].z*tdelay + z1*shrink + sin( sin(y1*iscale + phases[6]) * sin(x1*iscale + phases[7])*oscale + phases[8])*vstrength;
 }
 
